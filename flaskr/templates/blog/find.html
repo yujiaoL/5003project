@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}find{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <form method="POST">
+        <label for="by title">Title</label>
+        <input type="text" name="target" value="{{ request.form['target'] }}">
+        <input type="submit" value="find">
+    </form>
+    {% if search_results %}
+        <h2>results: </h2>
+        {% for result in search_results %}
+            <article class="post">
+                <header>
+                    <div>
+                        <h1>{{ result['title'] }}</h1>
+                        <div class="about">by {{ result['username'] }} on {{ result['created_time'].strftime('%Y-%m-%d') }}</div>
+                    </div>
+                </header>
+                <p class="body">{{ result['body'] }}</p>
+            </article>
+            {% if not loop.last %}
+                <hr>
+                <hr>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}
