@@ -273,22 +273,29 @@ def show_tags():
     ).fetchall()
 
     return render_template('blog/tag.html', posts=posts, tags=tags, current_tag=tag_name)
-# @bp.route('/tag_create', methods='POST')
-# @login_required
-# def tag_create():
-#     name = request.form['name']
-#     error = None
-#     if not name:
-#         error = 'Tag name is required.'
-#
-#     if error is not None:
-#         flash(error)
-#     else:
-#         db = get_db()
-#         db.execute(
-#             'INSERT INTO Tag (name) VALUES (?)',
-#             name
-#         )
-#         db.commit()
-#     return redirect(url_for('blog.index'))
-#
+
+
+@bp.route('/tag_create', methods=('GET', 'POST'))
+@login_required
+def tag_create():
+    if request.method == 'POST':
+        db = get_db()
+        name = request.form['name']
+        description = request.form['description']
+        error = None
+
+        if not name:
+            error = 'Tag name is required.'
+        elif db.execute('SELECT * FROM Tag WHERE name = ?', (name,)).fetchone():
+            error = 'Tag name is already taken.'
+        if error is not None:
+            flash(error)
+        else:
+            db.execute(
+                'INSERT INTO Tag (name, description) VALUES (?, ?)',
+                (name, description)
+            )
+            db.commit()
+            return redirect(url_for('blog.show_tags'))
+
+    return render_template('blog/create_tag.html')
