@@ -12,11 +12,6 @@ bp = Blueprint('blog', __name__)
 @bp.route('/')
 def index():
     db = get_db()
-    # posts = db.execute(
-    #     'SELECT p.id, title, body, created_time, author_id, username'
-    #     ' FROM post p JOIN user u ON p.author_id = u.id'
-    #     ' ORDER BY created_time DESC'
-    # ).fetchall()
     query = '''
             SELECT 
                 p.id,
@@ -86,18 +81,6 @@ def find():
             ''',
             (f"%{title}%",)
         ).fetchall()
-        # query = '''
-        #             SELECT
-        #                 p.id,
-        #                 p.title,
-        #                 p.body,
-        #                 u.username,
-        #                 p.created_time
-        #             FROM Post p
-        #             JOIN User u ON p.author_id = u.id
-        #             WHERE p.title = ?
-        #         '''
-        # search_results = get_db().execute(query, (title,)).fetchall()
         print(search_results)
 
         if not search_results:
@@ -243,7 +226,7 @@ def show_tags():
     tag_name = request.args.get('tag')
     print(tag_name)
     if tag_name:
-        # selected tag
+        # selected tag post
         posts = db.execute(
             '''
             SELECT p.id, p.title, p.body, p.created_time, u.username
@@ -257,7 +240,7 @@ def show_tags():
             (tag_name,)
         ).fetchall()
     else:
-        # all
+        # all posts
         posts = db.execute(
             '''
             SELECT p.id, p.title, p.body, p.created_time, u.username
@@ -267,7 +250,7 @@ def show_tags():
             '''
         ).fetchall()
 
-    # 获取所有标签
+    # all tags
     tags = db.execute(
         'SELECT name FROM Tag ORDER BY name ASC'
     ).fetchall()
