@@ -8,7 +8,6 @@ from flaskr.db import get_db
 
 bp = Blueprint('blog', __name__)
 
-
 @bp.route('/')
 def index():
     db = get_db()
@@ -126,3 +125,59 @@ def delete(id):
     db.execute('DELETE FROM post WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('blog.index'))
+
+@bp.route('/<int:id>/like', methods=['POST','GET'])
+def like_post(id):
+    db = get_db()
+    pid = id
+    uid = g.user['id']
+
+    like = db.execute(
+        'SELECT * FROM Like WHERE pid = ? AND uid = ?',
+        (pid, uid)
+    ).fetchone()
+
+    if like:
+        # 如果点赞记录存在，删除记录（取消点赞）
+        db.execute(
+            'DELETE FROM Like WHERE pid = ? AND uid = ?',
+            (pid, uid)
+        )
+    else:
+        # 如果点赞记录不存在，插入记录（点赞）
+        db.execute(
+            'INSERT INTO Like (pid, uid) VALUES (?, ?)',
+            (pid, uid)
+        )
+    db.commit()
+    return redirect(url_for('blog.index'))
+
+@bp.route('/<int:id>/comment', methods=('GET', 'POST'))
+@login_required
+def comment_post(id):
+    pid = id
+    uid = g.user['id']
+    db = get_db()
+    post = db.execute(
+        'SELECT p.id, title, body, created_time, author_id, username'
+        ' FROM post p JOIN user u ON p.author_id = u.id'
+    ).fetchone()
+    if request.method == 'POST':
+        content = request.form['content']
+        error = None
+
+        if not content:
+            error = 'Content is required.'
+
+        if error is not None:
+            flash(error)
+        else:
+            db = get_db()
+            db.execute(
+                'INSERT INTO Comment (pid, uid, content) VALUES (?, ?, ?)',
+                (pid, uid, content)
+            )
+            db.commit()
+            return redirect(url_for('blog.index'))
+
+    return render_template('blog/comment.html',post=post)

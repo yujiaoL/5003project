@@ -21,6 +21,12 @@
                     </div>
                 </header>
                 <p class="body">{{ result['body'] }}</p>
+
+                <!--Like and comment-->
+                <div class="post-actions">
+                    <a class="action" href="{{ url_for('blog.like_post', id=result['id']) }}">👍Like</a>
+                    <div class="comment-btn" onclick="commentPost({{ result['id'] }})">💬 Comment</div>
+                </div>
             </article>
             {% if not loop.last %}
                 <hr>
@@ -28,5 +34,4 @@
             {% endif %}
         {% endfor %}
     {% endif %}
-
 {% endblock %}
