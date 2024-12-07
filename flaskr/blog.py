@@ -36,27 +36,50 @@ def index():
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
 def create():
+    db = get_db()
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
-        error = None
+        tag_ids = request.form.getlist('tags')
+        new_tag_name = request.form['new_tag'].strip()
 
-        if not title:
-            error = 'Title is required.'
+        # create new post
+        cursor = db.execute(
+            'INSERT INTO Post (title, body, author_id) VALUES (?, ?, ?)',
+            (title, body, g.user['id'])
+        )
+        post_id = cursor.lastrowid
 
-        if error is not None:
-            flash(error)
-        else:
-            db = get_db()
+        # existing tags
+        for tag_id in tag_ids:
             db.execute(
-                'INSERT INTO post (title, body, author_id)'
-                ' VALUES (?, ?, ?)',
-                (title, body, g.user['id'])
+                'INSERT INTO Post_Tag (pid, tid) VALUES (?, ?)',
+                (post_id, tag_id)
             )
-            db.commit()
-            return redirect(url_for('blog.index'))
 
-    return render_template('blog/create.html')
+        # new tags
+        if new_tag_name:
+            # 检查新标签是否重复
+            tag = db.execute('SELECT id FROM Tag WHERE name = ?', (new_tag_name,)).fetchone()
+            if tag is None:
+                tag_cursor = db.execute(
+                    'INSERT INTO Tag (name) VALUES (?)',
+                    (new_tag_name,)
+                )
+                new_tag_id = tag_cursor.lastrowid
+            else:
+                new_tag_id = tag['id']
+
+            db.execute(
+                'INSERT INTO Post_Tag (pid, tid) VALUES (?, ?)',
+                (post_id, new_tag_id)
+            )
+
+        db.commit()
+        return redirect(url_for('blog.index'))
+
+    existing_tags = db.execute('SELECT id, name FROM Tag').fetchall()
+    return render_template('blog/create.html', existing_tags=existing_tags)
 
 
 @bp.route('/find', methods=('GET', 'POST'))

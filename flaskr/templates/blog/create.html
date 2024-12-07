@@ -8,8 +8,47 @@
     <form method="post">
         <label for="title">Title</label>
         <input name="title" id="title" value="{{ request.form['title'] }}" required>
+
         <label for="body">Body</label>
         <textarea name="body" id="body">{{ request.form['body'] }}</textarea>
+
+        <h3>Tags</h3>
+<!--        <p>You can choose 0 or more tags from the list below, or create a new tag:</p>-->
+        <!-- select tag -->
+        <div class="tags-selection">
+            <label for="existing-tags">Choose tags (select 0 or more):</label>
+            <div class="tag-list">
+                {% for tag in existing_tags %}
+                    <label class="tag">
+                        <input type="checkbox" name="tags" value="{{ tag['id'] }}"
+                            {% if tag['id'] in selected_tags %}checked{% endif %}>
+                        {{ tag['name'] }}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- new tag -->
+        <div class="new-tag-section">
+            <label for="new_tag">Or create a new tag:</label>
+            <input type="text" name="new_tag" id="new_tag" placeholder="Enter new tag (optional)">
+            <p class="hint">You can create one new tag. It will be added to this post.</p>
+
+        </div>
+
         <input type="submit" value="Save">
     </form>
+<script>
+    const newTagInput = document.getElementById('new_tag');
+    const hint = document.querySelector('.new-tag-section .hint');
+
+    newTagInput.addEventListener('input', function () {
+        const value = newTagInput.value.trim();
+        if (value) {
+            hint.textContent = `New tag '${value}' will be created and added to this post`;
+        } else {
+            hint.textContent = "You can create one new tag. It will be added to this post.";
+        }
+    });
+</script>
 {% endblock %}
