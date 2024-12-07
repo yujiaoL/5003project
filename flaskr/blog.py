@@ -8,6 +8,7 @@ from flaskr.db import get_db
 
 bp = Blueprint('blog', __name__)
 
+
 @bp.route('/')
 def index():
     db = get_db()
@@ -70,9 +71,6 @@ def find():
 
         if not title:
             return render_template('blog/find.html')
-
-        title = "%" + title + "%"
-        print(title)
         search_results = get_db().execute(
             '''
             SELECT p.id, title, body, created_time, author_id, username,
@@ -164,7 +162,8 @@ def delete(id):
     db.commit()
     return redirect(url_for('blog.index'))
 
-@bp.route('/<int:id>/like', methods=['POST','GET'])
+
+@bp.route('/<int:id>/like', methods=['POST', 'GET'])
 @login_required
 def like_post(id):
     db = get_db()
@@ -190,6 +189,7 @@ def like_post(id):
         )
     db.commit()
     return redirect(url_for('blog.index'))
+
 
 @bp.route('/<int:id>/comment', methods=('GET', 'POST'))
 @login_required
@@ -227,6 +227,7 @@ def comment_post(id):
 
     return render_template('blog/comment.html', post=post, comments=comments)
 
+
 @bp.route('/<int:id>/comment_delete', methods=('POST',))
 @login_required
 def comment_delete(id):
@@ -234,3 +235,60 @@ def comment_delete(id):
     db.execute('DELETE FROM Comment WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('blog.index'))
+
+@bp.route('/tags', methods=('POST','GET'))
+@login_required
+def show_tags():
+    db = get_db()
+    tag_name = request.args.get('tag')
+    print(tag_name)
+    if tag_name:
+        # selected tag
+        posts = db.execute(
+            '''
+            SELECT p.id, p.title, p.body, p.created_time, u.username
+            FROM Post p
+            JOIN User u ON p.author_id = u.id
+            JOIN Post_Tag pt ON p.id = pt.pid
+            JOIN Tag t ON pt.tid = t.id
+            WHERE t.name = ?
+            ORDER BY p.created_time DESC
+            ''',
+            (tag_name,)
+        ).fetchall()
+    else:
+        # all
+        posts = db.execute(
+            '''
+            SELECT p.id, p.title, p.body, p.created_time, u.username
+            FROM Post p
+            JOIN User u ON p.author_id = u.id
+            ORDER BY p.created_time DESC
+            '''
+        ).fetchall()
+
+    # 获取所有标签
+    tags = db.execute(
+        'SELECT name FROM Tag ORDER BY name ASC'
+    ).fetchall()
+
+    return render_template('blog/tag.html', posts=posts, tags=tags, current_tag=tag_name)
+# @bp.route('/tag_create', methods='POST')
+# @login_required
+# def tag_create():
+#     name = request.form['name']
+#     error = None
+#     if not name:
+#         error = 'Tag name is required.'
+#
+#     if error is not None:
+#         flash(error)
+#     else:
+#         db = get_db()
+#         db.execute(
+#             'INSERT INTO Tag (name) VALUES (?)',
+#             name
+#         )
+#         db.commit()
+#     return redirect(url_for('blog.index'))
+#

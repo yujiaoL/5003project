@@ -5,7 +5,8 @@
     <h1><a href="{{ url_for('index') }}">Home</a></h1>
 
     <ul>
-        <li><a href="{{ url_for('blog.find') }}">To Find</a> </li>
+        <li><a href="{{ url_for('blog.find') }}">To Find Post</a> </li>
+        <li><a href="{{ url_for('blog.show_tags') }}">Tags</a></li>
         {% if g.user %}
             <li><span>{{ g.user['username'] }}</span>
             <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
