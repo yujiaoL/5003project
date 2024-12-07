@@ -23,6 +23,7 @@ def index():
                 p.body,
                 u.username,
                 p.created_time,
+                p.author_id,
                 COUNT(DISTINCT l.uid) AS like_count,
                 COUNT(DISTINCT c.id) AS comment_count
             FROM Post p
@@ -164,6 +165,7 @@ def delete(id):
     return redirect(url_for('blog.index'))
 
 @bp.route('/<int:id>/like', methods=['POST','GET'])
+@login_required
 def like_post(id):
     db = get_db()
     pid = id
@@ -223,4 +225,4 @@ def comment_post(id):
             db.commit()
             return redirect(url_for('blog.index'))
 
-    return render_template('blog/comment.html',post=post,comments=comments)
+    return render_template('blog/comment.html', post=post, comments=comments)
