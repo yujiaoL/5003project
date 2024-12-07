@@ -14,13 +14,22 @@
             </div>
         </header>
 
-        <div class="comments">
-            <h3>Comments</h3>
-            {% for comment in comments %}
-            <div class="comment">{{comment['content']}}</div>
-            <div class="about">by {{ comment['username'] }} on {{ comment['comment_time'].strftime('%Y-%m-%d') }}</div>
-            {% endfor %}
-        </div>
+        <h3>Comments</h3>
+            <div class="comments-container">
+                {% for comment in comments %}
+                    <div class="comment-item">
+                        <div class="comment-content">
+                            <span>{{ comment['content'] }}</span>
+                            {% if g.user['id'] == comment['uid'] %}
+                                <form class="delete-form" action="{{ url_for('blog.comment_delete', id=comment['id']) }}" method="post">
+                                    <button class="delete-btn" type="submit" onclick="return confirm('Are you sure?');">Delete</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                        <div class="about">by {{ comment['username'] }} on {{ comment['comment_time'].strftime('%Y-%m-%d') }}</div>
+                    </div>
+                {% endfor %}
+            </div>
     </article>
 
     <form method="post">

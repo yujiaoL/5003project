@@ -204,7 +204,7 @@ def comment_post(id):
         (pid,)
     ).fetchone()
     comments = db.execute(
-        'SELECT c.content, c.comment_time, u.username FROM Comment c JOIN user u ON c.uid = u.id WHERE pid = ?',
+        'SELECT c.content, c.comment_time, u.username, c.id, c.uid FROM Comment c JOIN user u ON c.uid = u.id WHERE pid = ?',
         (pid,)
     ).fetchall()
     if request.method == 'POST':
@@ -226,3 +226,11 @@ def comment_post(id):
             return redirect(url_for('blog.index'))
 
     return render_template('blog/comment.html', post=post, comments=comments)
+
+@bp.route('/<int:id>/comment_delete', methods=('POST',))
+@login_required
+def comment_delete(id):
+    db = get_db()
+    db.execute('DELETE FROM Comment WHERE id = ?', (id,))
+    db.commit()
+    return redirect(url_for('blog.index'))
