@@ -22,8 +22,8 @@
             <p class="body">{{ post['body'] }}</p>
             <!--Like and comment-->
                 <div class="post-actions">
-                    <a class="action" href="{{ url_for('blog.like_post', id=post['id']) }}">👍 Like</a>
-                    <a class="comment_post" href="{{ url_for('blog.comment_post', id=post['id']) }}">💬 Comment</a>
+                    <a class="action" href="{{ url_for('blog.like_post', id=post['id']) }}">👍 Like ({{post['like_count']}})</a>
+                    <a class="comment_post" href="{{ url_for('blog.comment_post', id=post['id']) }}">💬 Comment({{post['comment_count']}})</a>
                 </div>
         </article>
         {% if not loop.last %}

@@ -11,11 +11,28 @@ bp = Blueprint('blog', __name__)
 @bp.route('/')
 def index():
     db = get_db()
-    posts = db.execute(
-        'SELECT p.id, title, body, created_time, author_id, username'
-        ' FROM post p JOIN user u ON p.author_id = u.id'
-        ' ORDER BY created_time DESC'
-    ).fetchall()
+    # posts = db.execute(
+    #     'SELECT p.id, title, body, created_time, author_id, username'
+    #     ' FROM post p JOIN user u ON p.author_id = u.id'
+    #     ' ORDER BY created_time DESC'
+    # ).fetchall()
+    query = '''
+            SELECT 
+                p.id,
+                p.title,
+                p.body,
+                u.username,
+                p.created_time,
+                COUNT(DISTINCT l.uid) AS like_count,
+                COUNT(DISTINCT c.id) AS comment_count
+            FROM Post p
+            LEFT JOIN User u ON p.author_id = u.id
+            LEFT JOIN Like l ON p.id = l.pid
+            LEFT JOIN Comment c ON p.id = c.pid
+            GROUP BY p.id, u.username
+            ORDER BY p.created_time DESC
+        '''
+    posts = db.execute(query).fetchall()
     return render_template('blog/index.html', posts=posts)
 
 
@@ -54,14 +71,34 @@ def find():
             return render_template('blog/find.html')
 
         title = "%" + title + "%"
-
+        print(title)
         search_results = get_db().execute(
-            'SELECT p.id, title, body, created_time, author_id, username'
-            ' FROM post p JOIN user u ON p.author_id = u.id'
-            ' WHERE p.title like ?',
-            (title,)
+            '''
+            SELECT p.id, title, body, created_time, author_id, username,
+                   COUNT(DISTINCT l.uid) AS like_count,
+                   COUNT(DISTINCT c.id) AS comment_count
+            FROM post p
+            JOIN user u ON p.author_id = u.id
+            LEFT JOIN Like l ON p.id = l.pid
+            LEFT JOIN Comment c ON p.id = c.pid
+            WHERE p.title LIKE ?
+            GROUP BY p.id, u.username
+            ORDER BY p.created_time DESC
+            ''',
+            (f"%{title}%",)
         ).fetchall()
-
+        # query = '''
+        #             SELECT
+        #                 p.id,
+        #                 p.title,
+        #                 p.body,
+        #                 u.username,
+        #                 p.created_time
+        #             FROM Post p
+        #             JOIN User u ON p.author_id = u.id
+        #             WHERE p.title = ?
+        #         '''
+        # search_results = get_db().execute(query, (title,)).fetchall()
         print(search_results)
 
         if not search_results:
@@ -138,13 +175,13 @@ def like_post(id):
     ).fetchone()
 
     if like:
-        # 如果点赞记录存在，删除记录（取消点赞）
+        # cancel like
         db.execute(
             'DELETE FROM Like WHERE pid = ? AND uid = ?',
             (pid, uid)
         )
     else:
-        # 如果点赞记录不存在，插入记录（点赞）
+        # like
         db.execute(
             'INSERT INTO Like (pid, uid) VALUES (?, ?)',
             (pid, uid)
@@ -156,7 +193,6 @@ def like_post(id):
 @login_required
 def comment_post(id):
     pid = id
-    print(pid)
     uid = g.user['id']
     db = get_db()
     post = db.execute(
