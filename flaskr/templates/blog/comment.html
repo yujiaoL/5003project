@@ -5,19 +5,29 @@
 {% endblock %}
 
 {% block content %}
-        <article class="post">
-            <header>
-                <div>
-                    <h1>{{ post['title'] }}</h1>
-                    <div class="about">by {{ post['username'] }} on {{ post['created_time'].strftime('%Y-%m-%d') }}</div>
-                    <div class="body"> {{post.body}}</div>
-                </div>
-            </header>
+    <article class="post">
+        <header>
+            <div>
+                <h1>{{ post['title'] }}</h1>
+                <div class="about">by {{ post['username'] }} on {{ post['created_time'].strftime('%Y-%m-%d') }}</div>
+                <div class="body"> {{post.body}}</div>
+            </div>
+        </header>
+
+        <div class="comments">
+            <h3>Comments</h3>
+            {% for comment in comments %}
+            <div class="comment">{{comment['content']}}</div>
+            <div class="about">by {{ comment['username'] }} on {{ comment['comment_time'].strftime('%Y-%m-%d') }}</div>
+            {% endfor %}
+        </div>
+    </article>
+
     <form method="post">
 
         <label for="content">Comment Content</label>
         <textarea name="content" id="content">{{ request.form['content'] }}</textarea>
         <input type="submit" value="Save">
     </form>
-            </article>
+
 {% endblock %}

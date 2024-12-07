@@ -156,12 +156,19 @@ def like_post(id):
 @login_required
 def comment_post(id):
     pid = id
+    print(pid)
     uid = g.user['id']
     db = get_db()
     post = db.execute(
         'SELECT p.id, title, body, created_time, author_id, username'
         ' FROM post p JOIN user u ON p.author_id = u.id'
+        ' WHERE p.id = ?',
+        (pid,)
     ).fetchone()
+    comments = db.execute(
+        'SELECT c.content, c.comment_time, u.username FROM Comment c JOIN user u ON c.uid = u.id WHERE pid = ?',
+        (pid,)
+    ).fetchall()
     if request.method == 'POST':
         content = request.form['content']
         error = None
@@ -180,4 +187,4 @@ def comment_post(id):
             db.commit()
             return redirect(url_for('blog.index'))
 
-    return render_template('blog/comment.html',post=post)
+    return render_template('blog/comment.html',post=post,comments=comments)
