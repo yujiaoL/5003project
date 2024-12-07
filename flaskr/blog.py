@@ -53,7 +53,7 @@ def find():
         if not title:
             return render_template('blog/find.html')
 
-        title = title + "%"
+        title = "%" + title + "%"
 
         search_results = get_db().execute(
             'SELECT p.id, title, body, created_time, author_id, username'
