@@ -407,52 +407,7 @@ def categories(id):
     return render_template('blog/categories.html', post=post, categories=categories)
 
 
-# @bp.route('/my_favorite', methods=['GET'])
-# @login_required
-# def my_favorite():
-#     db = get_db()
-#     user_id = g.user['id']  # 获取当前登录用户的 ID
-#
-#     # 获取用户所有的分类和他们收藏的帖子
-#     categories = db.execute(
-#         '''
-#         SELECT c.CategoryID, c.CategoryName
-#         FROM Categories c
-#         WHERE c.UserID = ?
-#         ORDER BY c.CategoryName ASC
-#         ''',
-#         (user_id,)
-#     ).fetchall()
-#
-#     # 获取每个分类下的收藏帖子
-#     favorites = {}
-#     for category in categories:
-#         category_id = category['CategoryID']
-#         category_name = category['CategoryName']
-#
-#         # 获取该分类下所有已收藏的帖子
-#         posts_in_category = db.execute(
-#             '''
-#             SELECT p.id, p.title, p.body, p.created_time, u.username
-#             FROM Post p
-#             JOIN PostCategory pc ON p.id = pc.PostID
-#             JOIN User u ON p.author_id = u.id
-#             WHERE pc.CategoryID = ? AND p.author_id = ?
-#             ORDER BY p.created_time DESC
-#             ''',
-#             (category_id, user_id)
-#         ).fetchall()
-#
-#         # 将帖子按分类分组
-#         if posts_in_category:
-#             favorites[category_name] = {
-#                 'category_id': category_id,
-#                 'posts': posts_in_category
-#             }
-#     print(favorites)
-#
-#     # 渲染模板并传递数据
-#     return render_template('blog/my_favorite.html', favorites=favorites)
+
 @bp.route('/my_favorite', methods=['GET'])
 @login_required
 def my_favorite():
