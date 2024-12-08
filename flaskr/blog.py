@@ -407,13 +407,14 @@ def categories(id):
     return render_template('blog/categories.html', post=post, categories=categories)
 
 
+
 @bp.route('/my_favorite', methods=['GET'])
 @login_required
 def my_favorite():
     db = get_db()
     user_id = g.user['id']  # 获取当前登录用户的 ID
 
-    # 获取用户所有的分类和他们收藏的帖子
+    # 获取用户所有的分类
     categories = db.execute(
         '''
         SELECT c.CategoryID, c.CategoryName
@@ -433,14 +434,14 @@ def my_favorite():
         # 获取该分类下所有已收藏的帖子
         posts_in_category = db.execute(
             '''
-            SELECT p.id, p.title, p.body, p.created_time, u.username
+            SELECT p.id, p.title, p.body, p.created_time, u.username, u.id as author_id
             FROM Post p
             JOIN PostCategory pc ON p.id = pc.PostID
             JOIN User u ON p.author_id = u.id
-            WHERE pc.CategoryID = ? AND p.author_id = ?
+            WHERE pc.CategoryID = ?
             ORDER BY p.created_time DESC
             ''',
-            (category_id, user_id)
+            (category_id,)
         ).fetchall()
 
         # 将帖子按分类分组
@@ -449,7 +450,6 @@ def my_favorite():
                 'category_id': category_id,
                 'posts': posts_in_category
             }
-    print(favorites)
 
     # 渲染模板并传递数据
     return render_template('blog/my_favorite.html', favorites=favorites)
@@ -457,21 +457,6 @@ def my_favorite():
 @bp.route('/remove_from_favorites/<int:post_id>/<int:category_id>', methods=['POST'])
 @login_required
 def remove_from_favorites(post_id, category_id):
-    # db = get_db()
-    # user_id = g.user['id']
-    #
-    # # 确保用户只能删除他们自己的收藏
-    # db.execute(
-    #     '''
-    #     DELETE FROM PostCategory
-    #     WHERE PostID = ? AND CategoryID = ?
-    #     ''',
-    #     (post_id, category_id)
-    # )
-    # db.commit()
-    #
-    # flash('Post removed from favorites!', 'success')
-    # return redirect(url_for('blog.my_favorite'))
     db = get_db()
     user_id = g.user['id']
 
