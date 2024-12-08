@@ -209,8 +209,31 @@ def comment_post(id):
         ' WHERE p.id = ?',
         (pid,)
     ).fetchone()
+    # comments = db.execute(
+    #     'SELECT c.content, c.comment_time, u.username, c.id, c.uid FROM Comment c JOIN user u ON c.uid = u.id WHERE pid = ?',
+    #     (pid,)
+    # ).fetchall()
     comments = db.execute(
-        'SELECT c.content, c.comment_time, u.username, c.id, c.uid FROM Comment c JOIN user u ON c.uid = u.id WHERE pid = ?',
+        '''
+        SELECT 
+            c.content, 
+            c.comment_time, 
+            u.username, 
+            c.id, 
+            c.uid, 
+            c.parent_id, 
+            parent_user.username AS parent_username
+        FROM 
+            Comment c
+        JOIN 
+            User u ON c.uid = u.id
+        LEFT JOIN 
+            Comment parent_comment ON c.parent_id = parent_comment.id
+        LEFT JOIN 
+            User parent_user ON parent_comment.uid = parent_user.id
+        WHERE 
+            c.pid = ?
+        ''',
         (pid,)
     ).fetchall()
     if request.method == 'POST':
@@ -327,7 +350,9 @@ def comment_reply(id):
     db.commit()
     return redirect(url_for('blog.comment_post', id=comment['pid']))
 
-
+# @bp.route('/<int:id>/replied_comment', methods=('POST',))
+# @login_required
+# def comment_nest(id):
 
 @bp.route('/<int:id>/categories', methods=['GET', 'POST'])
 @login_required
