@@ -17,7 +17,7 @@
                 <header>
                     <div>
                         <h1>{{ result['title'] }}</h1>
-                        <div class="about">by {{ result['username'] }} on {{ result['created_time'].strftime('%Y-%m-%d') }}</div>
+                        <div class="about">by {{ result['username'] }} on {{ result['created_time'].strftime('%Y-%m-%d %H:%M:%S') }}</div>
                     </div>
                 </header>
                 <p class="body">{{ result['body'] }}</p>
