@@ -26,6 +26,7 @@
                 <div class="post-actions">
                     <a class="action" href="{{ url_for('blog.like_post', id=post['id']) }}">👍 Like ({{post['like_count']}})</a>
                     <a class="comment_post" href="{{ url_for('blog.comment_post', id=post['id']) }}">💬 Comment({{post['comment_count']}})</a>
+                    <a class="" href="{{ url_for('blog.categories', id=post['id']) }}">Favorite</a>
                 </div>
         </article>
         {% if not loop.last %}

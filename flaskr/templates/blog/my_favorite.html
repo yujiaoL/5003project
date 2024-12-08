@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}My Favorite Posts{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="favorites">
+        {% if favorites %}
+            {% for category, data in favorites.items()%}
+                <h3>Category: {{ category }}</h3>
+                <ul>
+                    {% for post in data['posts'] %}
+                        <div class="post">
+                            <h1>{{ post['title'] }}</h1>
+                            <p class="body">{{ post['body'] }}</p>
+                            <div class="about">
+                                <span>by {{ post['username'] }} on {{ post['created_time'].strftime('%Y-%m-%d') }}</span>
+
+                                <!-- 删除按钮 -->
+                                <form method="POST" action="{{ url_for('blog.remove_from_favorites', post_id=post['id'], category_id=data['category_id']) }}" style="display:inline;">
+                                    <button type="submit" class="delete-action">Remove</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        {% else %}
+            <p>You haven't added any posts to your favorites yet.</p>
+        {% endif %}
+    </div>
+{% endblock %}

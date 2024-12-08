@@ -245,6 +245,7 @@ def comment_delete(id):
 @bp.route('/tags', methods=('POST','GET'))
 @login_required
 def show_tags():
+    print(1)
     db = get_db()
     tag_name = request.args.get('tag')
     print(tag_name)
@@ -281,6 +282,8 @@ def show_tags():
     return render_template('blog/tag.html', posts=posts, tags=tags, current_tag=tag_name)
 
 
+
+
 @bp.route('/tag_create', methods=('GET', 'POST'))
 @login_required
 def tag_create():
@@ -305,3 +308,204 @@ def tag_create():
             return redirect(url_for('blog.show_tags'))
 
     return render_template('blog/create_tag.html')
+
+
+
+@bp.route('/<int:id>/categories', methods=['GET', 'POST'])
+@login_required
+def categories(id):
+    pid = id
+    db = get_db()
+    user_id = g.user['id']
+
+    # 查询当前用户所有的分类
+    categories = db.execute(
+        '''
+        SELECT CategoryID, CategoryName
+        FROM Categories
+        WHERE UserID = ?
+        ORDER BY CategoryName ASC
+        ''',
+        (user_id,)
+    ).fetchall()
+
+    # 查询帖子详情
+    post = db.execute(
+        '''
+        SELECT p.id, p.title, p.body, p.created_time, u.username
+        FROM Post p
+        JOIN User u ON p.author_id = u.id
+        WHERE p.id = ?
+        ''',
+        (pid,)
+    ).fetchone()
+
+    if not post:
+        # 如果没有找到这个帖子，可以抛出错误或者返回某个页面
+        return "Post not found", 404
+
+    # 处理POST请求，用户提交的分类
+    if request.method == 'POST':
+        # 获取用户选择的分类ID
+        selected_categories = request.form.getlist('categories')  # 获取选择的现有分类列表
+
+        # 获取用户输入的新分类
+        new_category = request.form.get('new_category').strip()
+
+        if new_category:
+            # 检查新分类是否已经存在
+            existing_category = db.execute(
+                '''
+                SELECT CategoryID
+                FROM Categories
+                WHERE UserID = ? AND CategoryName = ?
+                ''',
+                (user_id, new_category)
+            ).fetchone()
+
+            if existing_category:
+                # 如果存在该分类，则返回错误消息
+                flash('This category already exists.', 'error')
+            else:
+                # 如果不存在，插入新分类到 Categories 表
+                db.execute(
+                    '''
+                    INSERT INTO Categories (CategoryName, UserID)
+                    VALUES (?, ?)
+                    ''',
+                    (new_category, user_id)
+                )
+                db.commit()
+
+                # 获取新插入的分类ID
+                new_category_id = db.execute(
+                    '''
+                    SELECT CategoryID
+                    FROM Categories
+                    WHERE CategoryName = ? AND UserID = ?
+                    ''',
+                    (new_category, user_id)
+                ).fetchone()['CategoryID']
+
+                # 将帖子与新分类关联
+                selected_categories.append(str(new_category_id))
+
+        # 将帖子与所有选中的分类关联
+        for category_id in selected_categories:
+            db.execute(
+                '''
+                INSERT INTO PostCategory (PostID, CategoryID)
+                VALUES (?, ?)
+                ''',
+                (pid, category_id)
+            )
+        db.commit()
+
+        flash('Post updated with selected categories!', 'success')
+        return redirect(url_for('blog.categories', id=pid))  # 重定向回当前页面
+
+    return render_template('blog/categories.html', post=post, categories=categories)
+
+
+@bp.route('/my_favorite', methods=['GET'])
+@login_required
+def my_favorite():
+    db = get_db()
+    user_id = g.user['id']  # 获取当前登录用户的 ID
+
+    # 获取用户所有的分类和他们收藏的帖子
+    categories = db.execute(
+        '''
+        SELECT c.CategoryID, c.CategoryName
+        FROM Categories c
+        WHERE c.UserID = ?
+        ORDER BY c.CategoryName ASC
+        ''',
+        (user_id,)
+    ).fetchall()
+
+    # 获取每个分类下的收藏帖子
+    favorites = {}
+    for category in categories:
+        category_id = category['CategoryID']
+        category_name = category['CategoryName']
+
+        # 获取该分类下所有已收藏的帖子
+        posts_in_category = db.execute(
+            '''
+            SELECT p.id, p.title, p.body, p.created_time, u.username
+            FROM Post p
+            JOIN PostCategory pc ON p.id = pc.PostID
+            JOIN User u ON p.author_id = u.id
+            WHERE pc.CategoryID = ? AND p.author_id = ?
+            ORDER BY p.created_time DESC
+            ''',
+            (category_id, user_id)
+        ).fetchall()
+
+        # 将帖子按分类分组
+        if posts_in_category:
+            favorites[category_name] = {
+                'category_id': category_id,
+                'posts': posts_in_category
+            }
+    print(favorites)
+
+    # 渲染模板并传递数据
+    return render_template('blog/my_favorite.html', favorites=favorites)
+
+@bp.route('/remove_from_favorites/<int:post_id>/<int:category_id>', methods=['POST'])
+@login_required
+def remove_from_favorites(post_id, category_id):
+    # db = get_db()
+    # user_id = g.user['id']
+    #
+    # # 确保用户只能删除他们自己的收藏
+    # db.execute(
+    #     '''
+    #     DELETE FROM PostCategory
+    #     WHERE PostID = ? AND CategoryID = ?
+    #     ''',
+    #     (post_id, category_id)
+    # )
+    # db.commit()
+    #
+    # flash('Post removed from favorites!', 'success')
+    # return redirect(url_for('blog.my_favorite'))
+    db = get_db()
+    user_id = g.user['id']
+
+    # 1. 删除帖子与分类的关系
+    db.execute(
+        '''
+        DELETE FROM PostCategory
+        WHERE PostID = ? AND CategoryID = ? 
+        ''',
+        (post_id, category_id)
+    )
+    db.commit()
+
+    # 2. 检查该分类下是否还有其他帖子
+    remaining_posts = db.execute(
+        '''
+        SELECT COUNT(*) 
+        FROM PostCategory
+        WHERE CategoryID = ?
+        ''',
+        (category_id,)
+    ).fetchone()
+
+    # 如果该分类下没有帖子，删除该分类
+    if remaining_posts[0] == 0:
+        db.execute(
+            '''
+            DELETE FROM Categories
+            WHERE CategoryID = ?
+            ''',
+            (category_id,)
+        )
+        db.commit()
+
+    # 3. 提示用户操作成功
+    flash('Post removed from favorites and category deleted if empty!', 'success')
+    return redirect(url_for('blog.my_favorite'))
