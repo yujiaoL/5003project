@@ -1,0 +1,100 @@
+{% extends 'admin_base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Manage Comment{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+ <article class="post">
+        <header>
+            <div>
+                <h1>{{ post['title'] }}</h1>
+                <div class="about">by {{ post['username'] }} on {{ post['created_time'].strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                <div class="body"> {{post.body}}</div>
+            </div>
+        </header>
+
+        <h3>Previous comments</h3>
+            <div class="comments-container">
+                {% for comment in comments %}
+                <div class="comment-item">
+    {% if comment['parent_id'] %}
+    <div class="reply-to">
+        <span class="reply-highlight">@{{ comment['parent_username'] }}</span>
+    </div>
+    {% endif %}
+    <div class="comment-content">
+        <span>{{ comment['content'] }}</span>
+        <div class="comment-actions">
+
+            <form class="delete-form" action="{{ url_for('blog.admin_comment_delete', id=comment['id']) }}" method="post">
+                <button class="delete-btn" type="submit" onclick="return confirm('Are you sure?');">Delete</button>
+            </form>
+
+        </div>
+    </div>
+    <div class="about">by {{ comment['username'] }} on {{ comment['comment_time'].strftime('%Y-%m-%d %H:%M:%S') }}</div>
+</div>
+                {% endfor %}
+            </div>
+    </article>
+
+
+
+
+<style>
+    .comments-container {
+    margin-top: 20px;
+}
+
+.comment-item {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    padding-left: 10px;
+}
+
+.reply-to {
+    font-size: 14px;
+    color: #007BFF;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.comment-content {
+    font-size: 16px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.delete-btn {
+    background-color: #f9f9f9;
+    color: #333333;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.reply-btn {
+    background-color: #f9f9f9;
+    color: #333333;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background-color: #f44336;
+    color: #fff;
+}.reply-btn:hover {
+    background-color: #007BFF;
+    color: #fff;
+}
+</style>
+{% endblock %}

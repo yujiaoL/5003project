@@ -58,7 +58,11 @@ def login():
         if error is None:
             session.clear()
             session['user_id'] = user['id']
-            return redirect(url_for('index'))
+            if user['permission'] == 1:
+                session['is_admin'] = user['permission']
+                return redirect(url_for('blog.admin'))  # for admin
+            else:
+                return redirect(url_for('index'))  # for regular user
 
         flash(error)
 
@@ -68,13 +72,20 @@ def login():
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
-
     if user_id is None:
         g.user = None
+        g.is_admin = False
     else:
-        g.user = get_db().execute(
-            'SELECT * FROM user WHERE id = ?', (user_id,)
-        ).fetchone()
+        db = get_db()
+        user = db.execute('SELECT * FROM user WHERE id = ?', (user_id,)).fetchone()
+        g.user = user
+        g.is_admin = (user['permission'] == 1)
+    # if user_id is None:
+    #     g.user = None
+    # else:
+    #     g.user = get_db().execute(
+    #         'SELECT * FROM user WHERE id = ?', (user_id,)
+    #     ).fetchone()
 
 
 @bp.route('/logout')
@@ -88,6 +99,17 @@ def login_required(view):
     def wrapped_view(**kwargs):
         if g.user is None:
             return redirect(url_for('auth.login'))
+
+        return view(**kwargs)
+
+    return wrapped_view
+
+
+def admin_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None or g.user['permission'] != 1:  # 检查是否是管理员
+            return redirect(url_for('index'))  # 如果不是管理员，重定向到首页
 
         return view(**kwargs)
 
