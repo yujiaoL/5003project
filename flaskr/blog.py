@@ -309,6 +309,24 @@ def tag_create():
 
     return render_template('blog/create_tag.html')
 
+@bp.route('/<int:id>/reply', methods=('POST',))
+@login_required
+def comment_reply(id):
+    db = get_db()
+    content = request.form['reply_content']
+    uid = g.user['id']
+    comment = db.execute('SELECT * FROM Comment WHERE id = ?', (id,)).fetchone()
+    pid = comment['pid']
+    if comment is None:
+        abort(404, "Comment does not exist.")
+
+    db.execute(
+        'INSERT INTO Comment (parent_id, uid, pid, content) VALUES (?, ?, ?, ?)',
+        (id, uid, pid, content)
+    )
+    db.commit()
+    return redirect(url_for('blog.comment_post', id=comment['pid']))
+
 
 
 @bp.route('/<int:id>/categories', methods=['GET', 'POST'])
@@ -412,7 +430,6 @@ def categories(id):
 def my_favorite():
     db = get_db()
     user_id = g.user['id']  # 获取当前登录用户的 ID
-
     # 获取用户所有的分类和他们收藏的帖子
     categories = db.execute(
         '''
