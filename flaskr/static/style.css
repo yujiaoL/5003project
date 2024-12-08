@@ -266,3 +266,49 @@ input[type=submit] {
     width: 100%;
     box-sizing: border-box;
 }
+.category{
+    background-color: #f1f1f1;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+.new-category-section input{
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+    box-sizing: border-box;
+}
+.delete-action {
+    background-color: #f44336;  /* 红色背景 */
+    color: white;
+    border: none;
+    padding: 3px 10px;
+    margin-left: 15px;  /* 为按钮添加一点左边距 */
+    font-size: 14px;    /* 调整字体大小 */
+    cursor: pointer;
+    border-radius: 4px; /* 给按钮加圆角 */
+    transition: background-color 0.3s; /* 背景颜色的过渡效果 */
+}
+
+/* 鼠标悬停时按钮颜色变化 */
+.delete-action:hover {
+    background-color: #d32f2f;
+}
+
+/* 使按钮和作者信息在同一行 */
+.post-actions {
+    display: flex;
+    align-items: center;  /* 让内容垂直居中 */
+    justify-content: flex-start;  /* 按钮和文本左对齐 */
+    margin-top: 10px;
+}
+
+.about {
+    flex: 1;  /* 使“by {{ post['username'] }}”部分占据剩余空间 */
+}
+
+.delete-action {
+    margin-left: 10px;  /* 让删除按钮与作者信息之间有一点间距 */
+}

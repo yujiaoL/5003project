@@ -63,3 +63,17 @@ CREATE TABLE Comment
     FOREIGN KEY (uid) REFERENCES User (id),
     FOREIGN KEY (parent_id) REFERENCES Comment (id)
 );
+CREATE TABLE Categories (
+    CategoryID INTEGER PRIMARY KEY AUTOINCREMENT,
+    CategoryName VARCHAR(255) NOT NULL,
+    UserID INT NOT NULL,
+    FOREIGN KEY (UserID) REFERENCES User(id)
+);
+
+CREATE TABLE PostCategory (
+    PostID INTEGER,
+    CategoryID INTEGER,
+    PRIMARY KEY (PostID, CategoryID),
+    FOREIGN KEY (PostID) REFERENCES Posts(id),
+    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
+);
