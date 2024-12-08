@@ -26,6 +26,7 @@
                 <div class="post-actions">
                     <a class="action" href="{{ url_for('blog.like_post', id=result['id']) }}">👍 Like ({{result['like_count']}})</a>
                     <a class="comment_post" href="{{ url_for('blog.comment_post', id=result['id']) }}">💬 Comment({{result['comment_count']}})</a>
+                    <a class="" href="{{ url_for('blog.categories', id=result['id']) }}">⭐️ Favorite</a>
 <!--                <a class="action" href="{{ url_for('blog.like_post', id=result['id']) }}">👍 Like </a>-->
 <!--                <a class="comment_post" href="{{ url_for('blog.comment_post', id=result['id']) }}">💬 Comment </a>-->
                 </div>
