@@ -80,12 +80,6 @@ def load_logged_in_user():
         user = db.execute('SELECT * FROM user WHERE id = ?', (user_id,)).fetchone()
         g.user = user
         g.is_admin = (user['permission'] == 1)
-    # if user_id is None:
-    #     g.user = None
-    # else:
-    #     g.user = get_db().execute(
-    #         'SELECT * FROM user WHERE id = ?', (user_id,)
-    #     ).fetchone()
 
 
 @bp.route('/logout')

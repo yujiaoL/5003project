@@ -4,6 +4,9 @@ DROP TABLE IF EXISTS Tag;
 DROP TABLE IF EXISTS Post_Tag;
 DROP TABLE IF EXISTS Like;
 DROP TABLE IF EXISTS Comment;
+DROP TABLE IF EXISTS Categories;
+DROP TABLE IF EXISTS PostCategory;
+
 
 
 CREATE TABLE User
@@ -11,8 +14,7 @@ CREATE TABLE User
     id       INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     password TEXT        NOT NULL,
-    permission INTEGER,
-    introduction TEXT
+    permission INTEGER
 );
 
 CREATE TABLE Post
@@ -74,6 +76,6 @@ CREATE TABLE PostCategory (
     PostID INTEGER,
     CategoryID INTEGER,
     PRIMARY KEY (PostID, CategoryID),
-    FOREIGN KEY (PostID) REFERENCES Posts(id),
+    FOREIGN KEY (PostID) REFERENCES Post(id),
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
 );

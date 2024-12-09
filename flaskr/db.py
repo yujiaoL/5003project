@@ -1,4 +1,5 @@
 import sqlite3
+from werkzeug.security import  generate_password_hash
 
 import click
 from flask import current_app, g
@@ -28,11 +29,16 @@ def init_db():
     with current_app.open_resource('schema.sql') as f:
         db.executescript(f.read().decode('utf8'))
 
-
 @click.command('init-db')
 def init_db_command():
     """Clear the existing data and create new tables."""
     init_db()
+    db = get_db()
+    db.execute(
+        'INSERT INTO User (username, password, permission) VALUES ( ?, ?, ?)',
+        ('admin', generate_password_hash('admin5003'), 1)
+    )
+    db.commit()
     click.echo('Initialized the database.')
 
 
