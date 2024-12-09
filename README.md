@@ -35,8 +35,13 @@
 
 # Usage
 
+Make sure Python is installed on your system; if it is not, follow the official documentation: [Python Official Download Page](https://www.python.org/downloads/)
+
 Run the following command in the root directory
 
-1. Initialize database    `flask --app flaskr init-db`
-2. Run application      `flask  --app flaskr run --debug`
+1. Install flask `pip install flask`
+2. Initialize database    `flask --app flaskr init-db`
+3. Run application      `flask  --app flaskr run --debug`
+
+You can refer to the video [‘Instructions.mov’](Instructions.mov) in this project, for more information about the project's functionality.
 
