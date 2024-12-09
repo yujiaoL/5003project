@@ -23,6 +23,9 @@
 ## For Admin
 - Admins can view and search posts made by users.
 - Admins have the authority to delete any posts or comments made by users.
+- Default account:
+   - username: `admin`
+   - password: `admin5003`
 
 # Main technology stack
 1. Python 3.11
